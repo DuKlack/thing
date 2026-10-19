@@ -1,0 +1,1 @@
+/usr/bin/c++ -O2 -DNDEBUG -g -rdynamic CMakeFiles/benchmark_cache.dir/benchmark_cache.cpp.o -o /home/itsc/b/cachelot/bin/RelWithDebugInfo/benchmark_cache  /home/itsc/b/cachelot/lib/RelWithDebugInfo/libcachelot.a /usr/lib/x86_64-linux-gnu/libboost_unit_test_framework.a /usr/lib/x86_64-linux-gnu/libboost_system.a /usr/lib/x86_64-linux-gnu/libboost_program_options.a 

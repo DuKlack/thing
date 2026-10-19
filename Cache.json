@@ -1,0 +1,19 @@
+{
+  "IP_address": {
+    "IP": "192.168.1.10",
+    "Host": {
+      "Host": "example.com",
+      "HTTP": {
+        "access_count": 5,
+        "cache_size": 1024,
+        "last_accessed": 1718500000,
+        "Last_Modified": 1718400000,
+        "Expiration_Time": 1718600000,
+        "header": [
+          { "Key": "Content-Type", "Value": "application/json" }
+        ],
+        "body": "Your response body text here..."
+      }
+    }
+  }
+}

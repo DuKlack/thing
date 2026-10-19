@@ -1,0 +1,2 @@
+/usr/bin/ar qc /home/itsc/b/cachelot/lib/RelWithDebugInfo/libcachelot.a CMakeFiles/cachelot.dir/common.cpp.o CMakeFiles/cachelot.dir/item.cpp.o CMakeFiles/cachelot.dir/stats.cpp.o CMakeFiles/cachelot.dir/c_api.cpp.o
+/usr/bin/ranlib /home/itsc/b/cachelot/lib/RelWithDebugInfo/libcachelot.a
