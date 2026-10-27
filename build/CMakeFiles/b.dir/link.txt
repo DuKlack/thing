@@ -1,1 +1,0 @@
-/usr/bin/c++ -rdynamic CMakeFiles/b.dir/main.o -o b  /home/itsc/b/cachelot/lib/RelWithDebugInfo/libcachelot.a /usr/lib/x86_64-linux-gnu/libz.so /usr/lib/x86_64-linux-gnu/libssl.so /usr/lib/x86_64-linux-gnu/libcrypto.so 

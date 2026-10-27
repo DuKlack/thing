@@ -1,1 +1,0 @@
-/usr/bin/c++ -O2 -DNDEBUG -g -rdynamic CMakeFiles/test_c_api.dir/test_c_api.c.o -o /home/itsc/b/cachelot/bin/RelWithDebugInfo/test_c_api  /home/itsc/b/cachelot/lib/RelWithDebugInfo/libcachelot.a /usr/lib/x86_64-linux-gnu/libboost_unit_test_framework.a /usr/lib/x86_64-linux-gnu/libboost_system.a /usr/lib/x86_64-linux-gnu/libboost_program_options.a 

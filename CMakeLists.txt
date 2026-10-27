@@ -1,37 +1,30 @@
+cmake_minimum_required(VERSION 3.12)
+project(CacheProject)
 
-project(b LANGUAGES CXX C)
-
+# Set C++ standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Threads REQUIRED)
+# Find POCO package and its required components
+find_package(Poco REQUIRED COMPONENTS  Net )
 
-# ----------------------------------------------------
-# 1. Add Local Subdirectories
-# ----------------------------------------------------
-add_subdirectory(cachelot)
-add_subdirectory(cpp-httplib)
-add_subdirectory(rapidjson)
-
-# ----------------------------------------------------
-# 2. Executable Target
-# ----------------------------------------------------
-add_executable(${PROJECT_NAME}
-    main.cpp
-
-)
-
-# ----------------------------------------------------
-# 3. Includes & Target Links
-# ----------------------------------------------------
-target_include_directories(${PROJECT_NAME} PRIVATE
+# Include current directory and all third-party header paths
+include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/cachelot/src
-    ${CMAKE_CURRENT_SOURCE_DIR}/cpp-httplib
+    ${CMAKE_CURRENT_SOURCE_DIR}/rapidjson
+    ${CMAKE_CURRENT_SOURCE_DIR}/cachelot
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    httplib::httplib
-    cachelot
-    Threads::Threads
+# Define all your implementation source files visible in the project
+set(SOURCES
+    main.cpp
+)
+
+# Create the executable target
+add_executable(CacheApp ${SOURCES})
+
+# Link POCO libraries using the proper imported targets
+target_link_libraries(CacheApp PRIVATE
+    rapidjson
+    Poco::Net
 )

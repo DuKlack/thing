@@ -1,86 +1,91 @@
+#include "Poco/Net/StreamSocket.h"
+#include "Poco/Net/SocketAddress.h"
+#include "Poco/Exception.h"
 #include <iostream>
-#include <fstream>
 #include <string>
-#include <filesystem>
-#include <ctime>
-#include "httplib.h"
+#include <cstring>
 
-namespace fs = std::filesystem;
+using Poco::Net::StreamSocket;
+using Poco::Net::SocketAddress;
 
-// Helper function to extract and record files from incoming requests
-// Helper function to extract and record files from incoming requests
-void save_request_files(const httplib::Request& req) {
-    std::string output_dir = "./captured_files";
-    if (!fs::exists(output_dir)) {
-        fs::create_directories(output_dir);
+// Helper function to extract a header value (like "Location")
+std::string getHeaderValue(const std::string& response, const std::string& headerName) {
+    std::string searchKey = headerName + ": ";
+    size_t pos = response.find(searchKey);
+    if (pos != std::string::npos) {
+        size_t start = pos + searchKey.length();
+        size_t end = response.find("\r\n", start);
+        if (end != std::string::npos) {
+            return response.substr(start, end - start);
+        }
     }
+    return "";
+}
 
-    // 1. Handle multipart/form-data file uploads via req.form
-    if (req.is_multipart_form_data()) {
-        // req.form contains the parsed multipart data
-        // You can check specific file fields or iterate through them.
-        // If you know the field name, use req.form.get_file_value("fieldname").
-        // For a general approach, we can check common fields or process the body/form parameters.
-        
-        // As a general fallback for generic catch-all file captures via form:
-        // Let's inspect standard fields or check if files exist.
-        // Alternatively, if you want to inspect specific files:
-        // Example: if (req.form.has_file("file")) { const auto& file = req.form.get_file_value("file"); ... }
-        
-        // Let's iterate or handle generic raw body/form payloads gracefully:
-        std::cout << "[INFO] Multipart form data received, but traversal depends on field names. Check req.form documentation for specific field mapping.\n";
-    }
+// Helper function to extract a port number from a URL string (e.g., "http://example.com:8080/path" -> 8080)
+int extractPortFromUrl(const std::string& url) {
+    // Look for a colon after the protocol (e.g., after "http://")
+    size_t protocolEnd = url.find("://");
+    size_t searchStart = (protocolEnd != std::string::npos) ? protocolEnd + 3 : 0;
     
-    // 2. Handle raw body payloads (e.g., PUT or raw POST streams, binary uploads)
-    if (!req.body.empty()) {
-        std::string filename = "payload_" + std::to_string(std::time(nullptr)) + ".bin";
+    size_t colonPos = url.find(':', searchStart);
+    if (colonPos != std::string::npos) {
+        size_t slashPos = url.find('/', colonPos);
+        std::string portStr = url.substr(colonPos + 1, (slashPos != std::string::npos ? slashPos : url.length()) - (colonPos + 1));
+        try {
+            return std::stoi(portStr);
+        } catch (...) {
+            return -1;
+        }
+    }
+    return -1; // No custom port specified in URL (defaults to 80 for http)
+}
+
+int main() {
+    try {
+        std::string host = "example.com";
+        SocketAddress address(host, 80);
+        StreamSocket socket;
         
-        // If the request path contains a filename, attempt to use it
-        fs::path p(req.path);
-        if (p.has_filename() && p.filename().string() != "/") {
-            filename = p.filename().string();
+        std::cout << "Connecting to " << host << " on port 80..." << std::endl;
+        socket.connect(address);
+
+        // 1. Print the Socket's Destination Port directly from the connection
+        SocketAddress peer = socket.peerAddress();
+        std::cout << "-> Socket Destination IP: " << peer.host().toString() << std::endl;
+        std::cout << "-> Socket Destination Port: " << peer.port() << std::endl; // Will print 80
+
+        // 2. Send HTTP request
+        std::string request = "GET / HTTP/1.1\r\n"
+                              "Host: " + host + "\r\n"
+                              "Connection: close\r\n\r\n";
+        socket.sendBytes(request.data(), request.length());
+
+        // 3. Receive the response message
+        char buffer[4096];
+        std::memset(buffer, 0, sizeof(buffer));
+        int n = socket.receiveBytes(buffer, sizeof(buffer) - 1);
+
+        if (n > 0) {
+            std::string response(buffer, n);
+
+            // 4. Check if the message contains a redirect "Location" header with a destination port
+            std::string locationHeader = getHeaderValue(response, "Location");
+            if (!locationHeader.empty()) {
+                std::cout << "-> Location Header found: " << locationHeader << std::endl;
+                int messagePort = extractPortFromUrl(locationHeader);
+                if (messagePort != -1) {
+                    std::cout << "-> Destination Port parsed from message: " << messagePort << std::endl;
+                } else {
+                    std::cout << "-> No explicit port in URL (uses default HTTP port 80/443)." << std::endl;
+                }
+            } else {
+                std::cout << "-> No 'Location' header in the message." << std::endl;
+            }
         }
 
-        std::string full_path = output_dir + "/" + filename;
-        std::ofstream ofs(full_path, std::ios::binary);
-        ofs.write(req.body.data(), req.body.size());
-
-        std::cout << "[SAVED BODY PAYLOAD] " << full_path 
-                  << " (" << req.body.size() << " bytes)\n";
-    }
-}
-int main() {
-    httplib::Server svr;
-
-    // Catch-all route for GET requests (downloads/page views)
-    svr.Get(R"(.*)", [](const httplib::Request& req, httplib::Response& res) {
-        std::cout << "[GET Request] Path: " << req.path 
-                  << " | Client IP: " << req.get_header_value("REMOTE_ADDR") << std::endl;
-        res.set_content("HTTP Recorder Active", "text/plain");
-    });
-
-    // Catch-all route for POST requests (file uploads)
-    svr.Post(R"(.*)", [](const httplib::Request& req, httplib::Response& res) {
-        std::cout << "[POST Request] Path: " << req.path << std::endl;
-        save_request_files(req);
-        res.set_content("File recorded successfully.", "text/plain");
-    });
-
-    // Catch-all route for PUT requests (file uploads/transfers)
-    svr.Put(R"(.*)", [](const httplib::Request& req, httplib::Response& res) {
-        std::cout << "[PUT Request] Path: " << req.path << std::endl;
-        save_request_files(req);
-        res.set_content("File recorded successfully.", "text/plain");
-    });
-
-    int port = 80;
-    std::cout << "Starting HTTP file recorder on port " << port << "...\n";
-    
-    // Bind and listen on all interfaces for port 80
-    if (!svr.listen("0.0.0.0", port)) {
-        std::cerr << "Error: Failed to bind to port " << port << ". "
-                  << "Note that binding to port 80 requires root / Administrator privileges.\n";
-        return 1;
+    } catch (const Poco::Exception& exc) {
+        std::cerr << "Error: " << exc.displayText() << std::endl;
     }
 
     return 0;

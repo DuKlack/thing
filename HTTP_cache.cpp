@@ -12,10 +12,10 @@
 
 bool HTTP_cache::add_header(std::vector<HeaderEntry> newHeader){
     if (this->Handle_Singleton_Header_conflict(newHeader) || this->Handle_Mutually_Exclusive_Headers(newHeader)) {
-        return false; // Conflict detected, response status set to 400 or header dropped
+        return false; 
     }
 
-// Loop through each valid header in the incoming batch
+
     for (const auto& h : newHeader) {
         // Check if the header already exists in the cache (case-insensitive)
         auto target = find_header(this->header, h.key);
