@@ -1,1 +1,1 @@
-/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/CacheApp.dir/main.cpp.o -o CacheApp  -Wl,-rpath,/home/itsc/b/poco/cmake-build/lib -lrapidjson /home/itsc/b/poco/cmake-build/lib/libPocoNet.so.124 /home/itsc/b/poco/cmake-build/lib/libPocoFoundation.so.124 -lpthread -ldl -lrt 
+/usr/bin/c++ -O3 -DNDEBUG CMakeFiles/CacheApp.dir/main.cpp.o -o CacheApp  -Wl,-rpath,/home/itsc/b/poco/cmake-build/lib /home/itsc/b/poco/cmake-build/lib/libPocoNet.so.124 /home/itsc/b/poco/cmake-build/lib/libPocoFoundation.so.124 -lpthread -ldl -lrt 

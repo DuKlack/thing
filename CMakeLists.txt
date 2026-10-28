@@ -11,7 +11,7 @@ find_package(Poco REQUIRED COMPONENTS  Net )
 # Include current directory and all third-party header paths
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/rapidjson
+
     ${CMAKE_CURRENT_SOURCE_DIR}/cachelot
 )
 
@@ -25,6 +25,6 @@ add_executable(CacheApp ${SOURCES})
 
 # Link POCO libraries using the proper imported targets
 target_link_libraries(CacheApp PRIVATE
-    rapidjson
+    
     Poco::Net
 )

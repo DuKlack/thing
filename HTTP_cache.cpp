@@ -15,7 +15,6 @@ bool HTTP_cache::add_header(std::vector<HeaderEntry> newHeader){
         return false; 
     }
 
-
     for (const auto& h : newHeader) {
         // Check if the header already exists in the cache (case-insensitive)
         auto target = find_header(this->header, h.key);
